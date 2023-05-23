@@ -1,0 +1,12 @@
+forms:
+  deployForm:
+    - location:
+        {
+          label: "Azure Location where event source is deployed.",
+          type: "string"
+        }
+    - resourceGroupName:
+        {
+          label: "Name of the Resource Group where event source is deployed",
+          type: "string",
+        }

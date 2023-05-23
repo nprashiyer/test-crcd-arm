@@ -1,0 +1,15 @@
+publicFlows:
+  - DeployAzure
+
+flows:
+  DeployAzure:
+
+    - checkpoint: "Deploy Form"
+    - form: deployForm
+    - set:
+        resource:
+          name: "${deployForm.resourceGroupName}"
+          location: "${deployForm.location}"
+    - checkpoint: "Terraform Apply"
+    - call: setAzTerraformVariables
+    - call: tfeAzApplyAction

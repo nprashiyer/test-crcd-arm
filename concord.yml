@@ -1,0 +1,17 @@
+configuration:
+  runner:
+    events:
+      recordTaskInVars: true
+      recordTaskOutVars: true
+
+  dependencies:
+    - mvn://com.walmartlabs.concord.plugins:terraform-task:latest
+    - mvn://com.walmartlabs.concord.plugins:git:1.38.0
+
+  arguments:
+    client_secret: "${crypto.exportAsString('default', 'tf-spn', '')}"
+    client_id: ""
+
+    resource:
+      name: ""
+      location: ""
