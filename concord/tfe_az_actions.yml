@@ -1,0 +1,206 @@
+flows:
+  # tfeAzUpdateApplyAction:
+  #   - task: terraform
+  #     in:
+  #       action: apply
+  #       destroy: false
+  #       saveOutput: true
+  #       toolUrl: ${tf_source}
+  #       debug: true
+  #       backend:
+  #         remote:
+  #           hostname: ${tfe_hostname}
+  #           organization: ${tfe_org}
+  #           token: "${tfe_token}"
+  #           workspaces:
+  #             name: ${workspaceName}
+  #       extraEnv:
+  #         NO_PROXY: "wal-mart.com,walmart.com"
+
+  tfeAzApplyAction:
+    - task: terraform
+      in:
+        action: apply
+        destroy: false
+        saveOutput: true
+        toolUrl: ${tf_source}
+        debug: true
+        backend:
+          remote:
+            hostname: ${tfe_hostname}
+            organization: ${tfe_org}
+            token: "${tfe_token}"
+            workspaces:
+              name: ${workspaceName}
+
+        extraEnv:
+          NO_PROXY: "wal-mart.com,walmart.com"
+
+  tfeAzDestroyAction:
+    - log: "TFE start destroy process"
+    - task: terraform
+      in:
+        action: destroy
+        destroy: true
+        saveOutput: true
+        toolUrl: ${tf_source}
+        debug: true
+        ignoreErrors: false
+        backend:
+          remote:
+            hostname: ${tfe_hostname}
+            organization: ${tfe_org}
+            token: "${tfe_token}"
+            workspaces:
+              name: ${workspaceName}
+        extraEnv:
+          NO_PROXY: "wal-mart.com,walmart.com"
+
+  setAzTerraformVariables:
+    - call: setEnvVariable
+      withItems:
+        - key: "location"
+          value: ${resource.location}
+          category: "terraform"
+          hcl: "false"
+          sensitive: "false"
+        - key: "eventSourceType"
+          value: ${resource.eventSourceType}
+          category: "terraform"
+          hcl: "false"
+          sensitive: "false"
+        - key: "eventSourceName"
+          value: ${resource.eventSourceName}
+          category: "terraform"
+          hcl: "false"
+          sensitive: "false"
+        - key: "resource_group_name"
+          value: ${resource.resourceGroupName}
+          category: "terraform"
+          hcl: "false"
+          sensitive: "false"
+        - key: "subscription_name"
+          value: ${subscriptionName}
+          category: "terraform"
+          hcl: "false"
+          sensitive: "false"
+        - key: "storage_account_name"
+          value: ${storage_account_name}
+          category: "terraform"
+          hcl: "false"
+          sensitive: "false"
+        - key: "diagnostics_storage_account_name"
+          value: ${diagnostics_storage_account_name}
+          category: "terraform"
+          hcl: "false"
+          sensitive: "false"
+        - key: "resource_id"
+          value: ${resource_id}
+          category: "terraform"
+          hcl: "false"
+          sensitive: "false"
+        - key: "eventgrid_system_topic_type"
+          value: ${eventgrid_system_topic_type}
+          category: "terraform"
+          hcl: "false"
+          sensitive: "false"
+        - key: "storage_account_resource_group_name"
+          value: ${storage_account_resource_group_name}
+          category: "terraform"
+          hcl: "false"
+          sensitive: "false"
+        - key: "diagnostics_storage_account_resource_group_name"
+          value: ${diagnostics_storage_account_resource_group_name}
+          category: "terraform"
+          hcl: "false"
+          sensitive: "false"
+        - key: "tags"
+          category: "terraform"
+          hcl: "true"
+          sensitive: "false"
+          value: '{
+            "applicationname"="${resource.application_name}",
+            "environment"="${resource.environment}",
+            "apmid"="${resource.apm}",
+            "trproductid"="${resource.trproductid}",
+            "applicationtier"="${resource.applicationTier}",
+            "ssp"="${resource.ssp}",
+            "hubinstance"= "${resource.environment}-${resource.application_name}",
+            "owner"="${resource.notificationdistlist}",
+            "notificationdistlist"="${resource.notificationdistlist}",
+            "srcr"="${resource.srcr}",
+            "deploymenttype"="managed",
+           }'
+
+  # updateAzTerraformVariables:
+  #   - call: getUpdateVarId
+  #     withItems:
+  #       - workspaceName: ${workspaceName}
+  #         outVarName: "enabled"
+  #       - workspaceName: ${workspaceName}
+  #         outVarName: "always_on"
+
+  #   - call: updateTfeVariable
+  #     withItems:
+  #       - key: "enabled"
+  #         id: ${runtimeVars['enabled']}
+  #         value: ${resource.enabled}
+  #         category: "terraform"
+  #         hcl: "true"
+  #         sensitive: "false"
+  #       - key: "always_on"
+  #         id: ${runtimeVars['always_on']}
+  #         value: ${resource.always_on}
+  #         category: "terraform"
+  #         hcl: "true"
+  #         sensitive: "false"
+
+
+  # getUpdateVarId:
+  #   - log: "Getting ID for ${item.outVarName} Workspace: ${item.workspaceName}"
+  #   - set:
+  #       varName: ${item.outVarName}
+  #   - task: http
+  #     in:
+  #       request: json
+  #       headers:
+  #         Authorization: "Bearer ${tfe_token}"
+  #       method: GET
+  #       url: "${tfe_base_url}/vars?filter%5Borganization%5D%5Bname%5D=${tfe_org}&filter%5Bworkspace%5D%5Bname%5D=${item.workspaceName}"
+  #       response: json
+  #       out: jsonResponse
+  #   - if: ${jsonResponse.success}
+  #     then:
+  #       - expr: ${jsonResponse.content.data.stream().filter(x -> x.attributes.key.equals(varName)).map(x -> x.id).toList()[0]}
+  #         out: outVarNameId
+  #   - log: "Result ID==>${outVarNameId}"
+  #   - ${runtimeVars[varName] = outVarNameId}
+
+  # updateTfeVariable:
+  #   - log: "Updating variable: ${item.key}"
+  #   - task: http
+  #     in:
+  #       request: json
+  #       headers:
+  #         Authorization: "Bearer ${tfe_token}"
+  #         Content-Type: "application/vnd.api+json"
+  #       method: PATCH
+  #       url: "${tfe_base_url}/vars/${item.id}"
+  #       body:
+  #         {
+  #           "data":
+  #             {
+  #               "id": "${item.id}",
+  #               "type": "vars",
+  #               "attributes":
+  #                 {
+  #                   "value": "${item.value}",
+  #                   "category": "${item.category}",
+  #                   "hcl": "${item.hcl}",
+  #                   "sensitive": "${item.sensitive}"
+  #                 }
+  #             }
+  #         }
+  #       response: json
+  #       out: jsonResponse
+  #   - log: "Response ${item.key}: ${jsonResponse}"

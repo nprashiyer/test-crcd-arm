@@ -1,0 +1,15 @@
+configuration:
+  arguments:
+    senderEmail: ${managedPaaSDL}
+    emailSubject: "Strati PaaS Foundation - Managed Azure Event Grid System Topic Resource."
+
+flows:
+  sendMail:
+    - task: smtp
+      in:
+        mail:
+          from: ${senderEmail}
+          to: ${resource.notificationdistlist}
+          subject: ${emailSubject}
+          template: email_notification_template.html
+          ignoreErrors: true

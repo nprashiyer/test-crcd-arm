@@ -1,0 +1,161 @@
+publicFlows:
+  - provisionManagedEgst
+  - decommissionManagedEgst
+
+flows:
+  provisionManagedEgst:
+
+    - checkpoint: "Egst Form"
+    - if: ${resource.useForm}
+      then:
+        - form: applyEgstForm
+        - set:
+            resource:
+              environment: "${applyEgstForm.environment}"
+              location: "${applyEgstForm.location}"
+              resourceGroupName: "${applyEgstForm.resourceGroupName}"
+              notificationdistlist: ${applyEgstForm.notificationdistlist}
+              apm: ${applyEgstForm.apm}
+              trproductid: ${applyEgstForm.trproductid}
+              applicationTier: "${applyEgstForm.application_tier}"
+              ssp: "${applyEgstForm.ssp}"
+              eventSourceType: "${applyEgstForm.eventSourceType}"
+              eventSourceName: "${applyEgstForm.eventSourceName}"
+              useForm: true
+              application_name: ${applyEgstForm.applicationname}
+              adGroup:  ${applyEgstForm.adGroup}
+              skip_setupTFEWorkspace: false
+
+    - set:
+        finalApplicationName: ${resource.environment}-${resource.application_name}
+
+    - call: setAzCredentials
+      in:
+        environment: ${resource.environment}
+        eventSourceType: ${resource.eventSourceType}
+
+    - log: "Az Subscription: ${subscriptionName}"
+
+    - call: slackNotification
+      in:
+        message: |
+          "Provisioning TFE Workspace: *${finalApplicationName}* *Owner:* ${resource.notificationdistlist} *Location:* ${resource.location}
+
+    - checkpoint: "Create Workspace"
+    - call: setupAzTFEWorkspace
+      in:
+        workspaceName: ${finalApplicationName}
+
+    - checkpoint: "Terraform Apply"
+    - log: "Setting TF Variables"
+    - call: setAzTerraformVariables
+
+    - call: tfeAzApplyAction
+      in:
+         workspaceName: ${finalApplicationName}
+
+
+    - checkpoint: "Role Assignment"
+
+    - log: "---------------------------------Assigning permissions to AD Group on Storage Account-------------------------------"
+    - task: concord
+      in:
+        org: Strati-Public-Cloud
+        action: start
+        project: self_service_rbac
+        repo: ssrbac-external
+        #apiKey: "${crypto.exportAsString('strati-af-paas', 'LogicApp-Concord-API', '')}"
+        sync: true
+        entryPoint: sp-pl-azureeventgrid-systemtopic
+        arguments:
+          GROUPNAME: ${resource.adGroup}
+          SUBNAME:  ${subscriptionName}
+          #RGNAME: ${result.data.resource_group_name.value}
+          RGNAME: ${storage_account_resource_group_name}
+          APPID: ""
+
+    # - log: "---------------------------------Assigning permissions to AD Group in App Service Plan Resource Group-------------------------------"
+    # - script: js
+    #   body: |
+    #     function getResourceGroup(id) {
+    #       return id.split("/")[4];
+    #     }
+    #     execution.setVariable("appservices_rg", getResourceGroup(execution.getVariable("app_service_plan_id")));
+
+    # - task: concord
+    #   in:
+    #     org: Strati-Public-Cloud
+    #     action: start
+    #     project: self_service_rbac
+    #     repo: ssrbac-external
+    #     apiKey: "${crypto.exportAsString('strati-af-paas', 'LogicApp-Concord-API', '')}"
+    #     sync: true
+    #     entryPoint: sp-asp-logicfunction-logicapp
+    #     arguments:
+    #       GROUPNAME: ${resource.adGroup}
+    #       SUBNAME:  ${subscriptionName}
+    #       RGNAME: ${appservices_rg}
+    #       APPID: ""
+
+    - call: slackNotification
+      in:
+        message: |
+          "Egst has been provisioned: *${finalApplicationName}* *Owner:* ${resource.notificationdistlist} *Location:* ${resource.location}
+
+
+
+    - log: "---------------------------------Sending Email Notification-------------------------------"
+    - call: sendMail
+
+    - call: slackNotification
+      in:
+        message: |
+          "Provisioning Managed Event Grid System Topic resource on Workspace: *${finalApplicationName}* finished successfully."
+
+  decommissionManagedEgst:
+    - if: ${resource.useForm}
+      then:
+        - form: destroyResourcesForm
+        - set:
+            resource:
+              application_name: ${destroyResourcesForm.application_name}
+              environment: ${destroyResourcesForm.environment}
+
+    - set:
+        finalApplicationName: ${resource.environment}-${resource.application_name}
+
+    - log: "------------------------------------------------------------------------------------------"
+    - log: "----------Starting TFE Workspace: ${finalApplicationName} decommissioning.----------"
+    - log: "------------------------------------------------------------------------------------------"
+
+    - call: checkWorkspaceExists
+      in:
+        workspaceName: ${finalApplicationName}
+    - if: ${WorkspaceExist.success}
+      then:
+        - call: slackNotification
+          in:
+            message: |
+              "Decommission of Managed Event grid system topic on Workspace: ${finalApplicationName} starting. :alert-303:"
+        - call: tfeAzDestroyAction
+          in:
+            workspaceName: ${finalApplicationName}
+        - if: ${result.ok}
+          then:
+            - call: slackNotification
+              in:
+                message: |
+                  "Decommission of Managed Event grid system topic on Workspace: ${finalApplicationName} finished. :alert-303:"
+            - call: deleteTFEWorkspace
+              in:
+                workspaceName: ${finalApplicationName}
+          else:
+            - call: slackNotification
+              in:
+                message: |
+                  "Decommission of Managed Event grid system topic on Workspace: ${finalApplicationName} failed. :alert-303:"
+      else:
+        - call: slackNotification
+          in:
+            message: |
+              "Decommission of Managed Event grid system topic on Workspace: ${finalApplicationName} finished. :alert-303:"

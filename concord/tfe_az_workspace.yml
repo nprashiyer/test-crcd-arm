@@ -1,0 +1,273 @@
+flows:
+  setupAzTFEWorkspace:
+    - set:
+        flowName: ${context.toMap().__currentFlow}
+    - if: ${resource.skip_setupTFEWorkspace}
+      then:
+        - log: "skip_setupTFEWorkspace is enabled. Exiting."
+        - return
+    - call: checkWorkspaceExists
+
+    - if: ${!WorkspaceExist.success}
+      then:
+        - call: createWorkspace
+
+      else:
+        - set:
+            tfeWorkspaceId: ${WorkspaceExist.content.get('data').get('id')}
+        - call: getWorkspaceTerraformVariables
+        - call: updateWorkspace
+        - log: "${jsonResponse.content.get('data')}"
+        - log: "${jsonResponse.content.get('data').stream().map(d -> d.id).toList()}"
+        - log: "Workspace: ${workspaceName} exists with TFE-Workspace ID: ${tfeWorkspaceId}"
+
+    - if: ${!WorkspaceExist.success}
+      then:
+        - log: "Workspace: ${workspaceName} Does Not Exist, Setting Terraform Variables"
+        - call: setAzWorkspaceEnvVariables
+      else:
+        - log: "Workspace: ${workspaceName} Exists, Updating Terraform Variables"
+        - call: updateWorkspaceTerraformVariables
+
+
+  checkWorkspaceExists:
+    - set:
+        flowName: ${context.toMap().__currentFlow}   
+    - log: "Checking if workspace ${workspaceName} exists."
+    - task: http
+      in:
+        request: json
+        headers:
+          Authorization: "Bearer ${tfe_token}"
+          Content-Type: "application/vnd.api+json"
+        body:
+          data:
+            type: workspaces
+            attributes:
+              name: ${workspaceName}
+              terraform-version: ${tfe_version}
+              description: ${workspaceName}
+        method: GET
+        url: "${tfe_base_url}/organizations/${tfe_org}/workspaces/${workspaceName}"
+        response: json
+        out: WorkspaceExist
+        connectTimeout: 60000
+        socketTimeout: 60000
+        requestTimeout: 60000
+  
+  createWorkspace:
+    - set:
+        flowName: ${context.toMap().__currentFlow}  
+    - log: "Workspace does not exist. Creating workspace with name ${workspaceName}"
+    - task: http
+      in:
+        request: json
+        headers:
+          Authorization: "Bearer ${tfe_token}"
+          Content-Type: "application/vnd.api+json"
+        body:
+          data:
+            type: workspaces
+            attributes:
+              name: ${workspaceName}
+              terraform-version: ${tfe_version}
+              description: ${workspaceName}
+        method: POST
+        url: "${tfe_base_url}/organizations/${tfe_org}/workspaces"
+        response: json
+        out: generatedWorkspace
+        connectTimeout: 60000
+        socketTimeout: 60000
+        requestTimeout: 60000
+    - if: ${!generatedWorkspace.success}
+      then:
+        - call: systemNotification
+          in:
+            subject: "Error creating TFE workspace"
+            message: |
+              Error creating TFE workspace with name=${workspaceName} generatedWorkspace=${generatedWorkspace}
+        - throw: "Error getting publishing credentials"
+      else:
+        - log: "Response received: ${generatedWorkspace.content.get('data').get('id')}"
+        - set:
+            tfeWorkspaceId: ${generatedWorkspace.content.get('data').get('id')}
+        - log: "Workspace created with TFE-Workspace ID: ${tfeWorkspaceId}"
+
+  updateWorkspace:
+    - set:
+        flowName: ${context.toMap().__currentFlow}
+    - task: http
+      in:
+        request: json
+        headers:
+          Authorization: "Bearer ${tfe_token}"
+          Content-Type: "application/vnd.api+json"
+        body:
+          data:
+            type: workspaces
+            attributes:
+              name: ${workspaceName}
+              terraform-version: ${tfe_version}
+              description: ${workspaceName}
+        method: PATCH
+        url: "${tfe_base_url}/organizations/${tfe_org}/workspaces/${workspaceName}"
+        response: json
+        out: generatedWorkspace
+        connectTimeout: 60000
+        socketTimeout: 60000
+        requestTimeout: 60000
+    - if: ${!generatedWorkspace.success}
+      then:
+        - call: systemNotification
+          in:
+            subject: "Error creating TFE workspace"
+            message: |
+              Error creating TFE workspace with name=${workspaceName} generatedWorkspace=${generatedWorkspace}
+        - throw: "Error getting publishing credentials"
+      else:
+        - log: "Response received: ${generatedWorkspace.content.get('data').get('id')}"
+        - set:
+            tfeWorkspaceId: ${generatedWorkspace.content.get('data').get('id')}
+        - log: "Workspace: ${tfeWorkspaceId} Updated "
+
+  getWorkspaceEnvVariables:
+    - log: "Executing getWorkspaceEnvVariables Flow"
+    - log: "Setting workspace ${workspaceName} environment variables."
+    - task: http
+      in:
+        request: json
+        headers:
+          Authorization: "Bearer ${tfe_token}"
+          Content-Type: "application/vnd.api+json"
+        method: GET
+        url: "${tfe_base_url}/vars"
+
+  setAzWorkspaceEnvVariables:
+    - log: "setWorkspaceEnvVariables Flow"
+    - log: "Setting workspace ${workspaceName} environment variables."
+    - call: setEnvVariable
+      withItems:
+        - key: "ARM_CLIENT_ID"
+          value: ${client_id}
+          category: "env"
+          hcl: "false"
+          sensitive: "false"
+        - key: "ARM_CLIENT_SECRET"
+          value: ${client_secret}
+          category: "env"
+          hcl: "false"
+          sensitive: "true"
+
+  setEnvVariable:
+    - log: "setting Flow ${item.key}"
+    - task: http
+      in:
+        request: json
+        headers:
+          Authorization: "Bearer ${tfe_token}"
+          Content-Type: "application/vnd.api+json"
+        method: POST
+        url: "${tfe_base_url}/vars"
+        body:
+          {
+            "data":
+              {
+                "type": "vars",
+                "attributes":
+                  {
+                    "key": "${item.key}",
+                    "value": "${item.value}",
+                    "category": "${item.category}",
+                    "hcl": "${item.hcl}",
+                    "sensitive": "${item.sensitive}"
+                  },
+                "relationships":
+                  {
+                    "workspace":
+                      {
+                        "data":
+                          { "id": "${tfeWorkspaceId}", "type": "workspaces" },
+                      },
+                  },
+              },
+          }
+        response: json
+
+  updateEnvVariable:
+    - log: "Setting variable: ${item.key}"
+    - log: "Setting variable ID: ${item.id}"
+    - task: http
+      in:
+        request: json
+        headers:
+          Authorization: "Bearer ${tfe_token}"
+          Content-Type: "application/vnd.api+json"
+        method: PATCH
+        url: "${tfe_base_url}/vars/${item.id}"
+        body:
+          {
+            "data":
+              {
+                "type": "vars",
+                "id": "${item.id}",
+                "attributes":
+                  {
+                    "key": "${item.key}",
+                    "value": "${item.value}",
+                    "category": "${item.category}",
+                    "hcl": "${item.hcl}",
+                    "sensitive": "${item.sensitive}"
+                  },
+                "relationships":
+                  {
+                    "workspace":
+                      {
+                        "data":
+                          { "id": "${tfeWorkspaceId}", "type": "workspaces" },
+                      },
+                  },
+              },
+          }
+        response: json
+
+  deleteTFEWorkspace:
+    - set:
+        flowName: ${context.toMap().__currentFlow}  
+    - log: "Start delete workspace ${workspaceName}"
+    - task: http
+      in:
+        request: json
+        headers:
+          Authorization: "Bearer ${tfe_token}"
+          Content-Type: "application/vnd.api+json"
+        method: DELETE
+        url: "${tfe_base_url}/organizations/${tfe_org}/workspaces/${workspaceName}"
+        response: json
+        out: deletedWorkspace
+        connectTimeout: 60000
+        socketTimeout: 60000
+        requestTimeout: 60000
+    - if: ${!deletedWorkspace.success}
+      then:
+        - call: systemNotification
+          in:
+            subject: "Error deleting TFE workspace"
+            message: |
+              Error deleting TFE workspace with name=${workspaceName} generatedWorkspace=${deletedWorkspace}
+        - throw: "Error getting delete TFE workspace with name=${workspaceName}"
+      else:
+        - log: "Workspace ${workspaceName} were deleted"
+
+  getWorkspaceTerraformVariables:
+    - task: http
+      in:
+        request: json
+        headers:
+          Authorization: "Bearer ${tfe_token}"
+          Content-Type: "application/vnd.api+json"
+        method: GET
+        url: "${tfe_base_url}/workspaces/${tfeWorkspaceId}/vars"
+        response: json
+        out: jsonResponse
+        debug: true
+    - log: "Executing getWorkspaceTerraformVariables Flow"    

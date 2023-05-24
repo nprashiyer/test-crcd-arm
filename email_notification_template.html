@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <style>
+table {
+  font-family: arial, sans-serif;
+  border-collapse: collapse;
+  width: 100%;
+}
+td, th {
+  border: 1px solid #dddddd;
+  text-align: left;
+  padding: 8px;
+}
+tr:nth-child(even) {
+  background-color: #dddddd;
+}
+</style>
+</head>
+<body>
+
+<h2>Request for PaaS Foundation Managed Azure Event Grid System Topic Resource Provisioning.</h2>
+<h3>Information used to provisiong the Managed Resources:</h3>
+<table>
+    <tr>
+        <td>Location</td>
+        <td>{{resource.location}}</td>
+    </tr>
+    <tr>
+        <td>Environment</td>
+        <td>{{resource.environment}}</td>
+    </tr>
+    <tr>
+        <td>APM Record</td>
+        <td>{{resource.apm}}</td>
+    </tr>
+    <tr>
+        <td>Distribution List</td>
+        <td>{{resource.notificationdistlist}}</td>
+    </tr>
+    <tr>
+        <td>TR Product ID</td>
+        <td>{{resource.trproductid}}</td>
+    </tr>
+    <tr>
+        <td>Resource Group</td>
+        <td>{{result.data.resource_group_name.value}}</td>
+    </tr>
+    <tr>
+        <td>Storage Queue Endpoint</td>
+        <td>{{terraformOutput.storage_queue_endpoint.value}}</td>
+    </tr>
+    <tr>
+        <td>Requestor ID</td>
+        <td>{{initiator.username}}</td>
+    </tr>
+    <tr>
+        <td>Concord Process log details</td>
+        <td>https://concord.prod.walmart.com/#/process/{{txId}}/log</td>
+    </tr>
+</table>
+
+</body>
+</html> 

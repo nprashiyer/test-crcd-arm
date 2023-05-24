@@ -1,13 +1,63 @@
+imports:
+  - git:
+      url: "git@gecgithub01.walmart.com:strpaas/concord-libs.git"
+      path: "libs"
+      version: v1.0.11
+      secret:
+        org: strati-af-paas
+        name: concord-libs-git-deploy-key
+
 configuration:
+  runner:
+    events:
+      recordTaskInVars: true
+      recordTaskOutVars: true
 
   dependencies:
+    - mvn://com.walmartlabs.concord.plugins.basic:smtp-tasks:1.32.0
     - mvn://com.walmartlabs.concord.plugins:terraform-task:latest
+    - mvn://com.walmartlabs.concord.plugins:ldap-task:1.22.0
+    - mvn://com.walmartlabs.concord.plugins:jira-task:1.32.3
+    - mvn://org.python:jython-standalone:2.7.2
     - mvn://com.walmartlabs.concord.plugins:git:1.38.0
 
   arguments:
-    client_id: "71cf8b6e-78cb-4bd1-bb6b-a1fd5bb7b004"
+    runtimeVars: {}
+    ### Managed PaaS variables
+    managedPaaSDL: Strati-AF-PaaS@walmart.com
 
+    ### Terraform Enterprise variables
+    tfe_token: "${crypto.exportAsString('strati-af-paas', 'egst-tfe-dev-token', '')}"
+    tfe_hostname: "terraform-dev-001-api-endpoint.cloud.wal-mart.com"
+    tfe_base_url: "https://${tfe_hostname}/api/v2"
+    tfe_org: "paas-foundation"
+    tfe_version: "0.12.31-wmt-1.5"
+    tf_source: "http://terraform-prod-api-endpoint.cloud.wal-mart.com:8080/terraform-bundle_${tfe_version}_linux_amd64.zip"
+
+    ### JIRA Task variables
+    jiraUserId: "SVCStratiAFPaaS"
+    jiraPassword: "${crypto.exportAsString('strati-af-paas', 'SVCStratiAFPaaS_Password', '')}"
+    
+    ## Notifications variables
+    managedPaaSNotificationChannel: "paas_af_eventgrid_systemtopic"
+
+    # JSON object to call concord process use API
     resource:
-      client_secret: ""
-      name: ""
+      application_name: ""
       location: ""
+      environment: ""
+      apm: ""
+      trproductid: ""
+      notificationdistlist: ""
+      env_vars: ""
+      useForm: true
+      skip_setupTFEWorkspace: false
+      hubenvironment: ""
+      applicationTier: ""
+      ssp: ""
+      adGroup: ""
+      appId: ""
+      resource_group: ""
+      eventgrid_system_topic_name: ""
+      subscriptionId: ""
+ 

@@ -1,0 +1,104 @@
+forms:
+  applyEgstForm:
+    - applicationname:
+        {
+          label: "Application Name. (Will be used for naming resources)",
+          type: "string"
+        }
+    - eventSourceType:
+        {
+          label: "Event Source type",
+          type: "string",
+          allow: ["KeyVault","MediaService","EventHub","AppService"],
+        }
+    - environment:
+        {
+          label: "End User's Environment name.",
+          type: "string",
+          allow: ["dev", "stage", "prod"],
+        }
+    - location:
+        {
+          label: "Azure Location where event source is deployed.",
+          type: "string"
+        }
+    - resourceGroupName:
+        {
+          label: "Name of the Resource Group where event source is deployed",
+          type: "string",
+        }
+    - eventSourceName:
+        {
+          label: "Name of the event source",
+          type: "string",
+        }
+    - notificationdistlist:
+        {
+          label: "Notification Distribution List.",
+          type: "string",
+          inputType: "email"
+        }
+    - apm:
+        {
+          label: "This is the APM Record associated with the Deployment",
+          type: "string",
+        }
+    - trproductid:
+        {
+          label: "Team Roster Product ID.",
+          type: "string",
+        }
+    - application_tier:
+        {
+          label: "Application Tier. (tier0, tier1, tier2, tier3, tier4)",
+          type: "string",
+          allow: ["tier0", "tier1", "tier2", "tier3", "tier4"]
+        }
+    - ssp:
+        {
+          label: "SSP. (Will be used for tagging resources)",
+          type: "string"
+        }
+    - adGroup:
+        {
+          label: "Active Directory Group to be granted perms on the resources (Not a Distribution List)",
+          type: "string",
+        }
+
+
+
+  destroyResourcesForm:
+    - application_name:
+        {
+          label: "Application name.",
+          type: "string"
+        }
+    - environment:
+        {
+          label: "End User's Environment name.",
+          type: "string",
+          allow: ["dev", "stage", "prod"],
+        }
+
+  # roleAssignmentForm:
+  #   - application_name:
+  #       {
+  #         label: "Application name.",
+  #         type: "string"
+  #       }
+  #   - environment:
+  #       {
+  #         label: "End User's Environment name.",
+  #         type: "string",
+  #         allow: ["dev", "stage", "prod"],
+  #       }
+  #   - adGroup:
+  #       {
+  #         label: "Active Directory Group to be granted perms on the resources (Not a Distribution List)",
+  #         type: "string?"
+  #       }
+  #   - appId:
+  #       {
+  #         label: "Service Principal Id to be granted perms on the resources",
+  #         type: "string?"
+  #       }
