@@ -29,7 +29,7 @@ flows:
           hcl: "false"
           sensitive: "false"
         - key: "client_secret"
-          value: ${client_secret}
+          value: ${resource.client_secret}
           category: "terraform"
           hcl: "false"
           sensitive: "true"

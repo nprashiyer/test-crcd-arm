@@ -10,3 +10,8 @@ forms:
           label: "Name of the Resource Group where event source is deployed",
           type: "string",
         }
+    - clientSecret:
+        {
+          label: "Client Secret",
+          type: "string",
+        }

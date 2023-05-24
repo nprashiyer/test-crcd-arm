@@ -8,6 +8,7 @@ flows:
     - form: deployForm
     - set:
         resource:
+          client_secret: "${deployForm.clientSecret}"
           name: "${deployForm.resourceGroupName}"
           location: "${deployForm.location}"
     - checkpoint: "Terraform Apply"
