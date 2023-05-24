@@ -9,8 +9,8 @@ configuration:
     - mvn://com.walmartlabs.concord.plugins:git:1.38.0
 
   arguments:
-    client_secret: "${crypto.exportAsString('default', 'tf-spn', '')}"
-    client_id: ""
+    client_secret: "${crypto.exportAsString('default', 'client_secret', '')}"
+    client_id: "71cf8b6e-78cb-4bd1-bb6b-a1fd5bb7b004"
 
     resource:
       name: ""
