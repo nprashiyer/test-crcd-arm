@@ -1,8 +1,8 @@
 configuration:
 
-  # dependencies:
-  #   - mvn://com.walmartlabs.concord.plugins:terraform-task:latest
-  #   - mvn://com.walmartlabs.concord.plugins:git:1.38.0
+  dependencies:
+    - mvn://com.walmartlabs.concord.plugins:terraform-task:latest
+    - mvn://com.walmartlabs.concord.plugins:git:1.38.0
 
   arguments:
     client_id: "71cf8b6e-78cb-4bd1-bb6b-a1fd5bb7b004"
