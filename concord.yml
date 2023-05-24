@@ -1,12 +1,3 @@
-imports:
-  - git:
-      url: "git@gecgithub01.walmart.com:strpaas/concord-libs.git"
-      path: "libs"
-      version: v1.0.11
-      secret:
-        org: strati-af-paas
-        name: concord-libs-git-deploy-key
-
 configuration:
   runner:
     events:
