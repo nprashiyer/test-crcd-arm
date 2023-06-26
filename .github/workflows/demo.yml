@@ -37,4 +37,4 @@ jobs:
       # Runs a set of commands using the runners shell
       - name: Run Hello World command
         run: |
-          echo ${{ secrets[format('{0}_{1}_KUBECONFIG', ${{ inputs.env }}, ${{ inputs.instance }})]}}
+          echo ${{ secrets[format('{0}_{1}_KUBECONFIG', inputs.env, inputs.instance)]}}
