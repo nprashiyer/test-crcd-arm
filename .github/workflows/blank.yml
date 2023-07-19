@@ -38,7 +38,9 @@ jobs:
         id: account-id
         run: |
           envType="${{ inputs.envType }}"
+          echo "----->$envType<--------"
           accountId=$( ${{ env.ACCOUNT_ID }} | jq -r ".$envType")
+          echo "******** $accountId ********"
           echo "::set-output name=accountId::$accountId"
 
       # Runs a single command using the runners shell
