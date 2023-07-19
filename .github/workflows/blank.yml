@@ -41,7 +41,7 @@ jobs:
           envType="${{ inputs.envType }}"
           accountId="${{ env.ACCOUNT_ID }}"
           echo $envType
-          echo $accountId
+          echo "$ACCOUNT_ID"
           echo "******* ********"
           echo $accountId | yq .$envType
           echo "::set-output name=accountId::$accountId"
