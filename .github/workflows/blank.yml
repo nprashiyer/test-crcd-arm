@@ -19,8 +19,8 @@ on:
 env:
   ACCOUNT_ID: >
     {
-      "sbx" : "123456789",
-      "qa" : "15041992"
+      \"sbx\" : \"123456789\",
+      \"qa\" : \"15041992\"
     }
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
