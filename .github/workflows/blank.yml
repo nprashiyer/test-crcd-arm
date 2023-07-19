@@ -45,6 +45,7 @@ jobs:
           echo "******* ********"
           yq --help
           echo "******* YAML ********"
+          cat account.yml
           yq '.sbx' accounts.yml
           echo "::set-output name=accountId::$accountId"
           
