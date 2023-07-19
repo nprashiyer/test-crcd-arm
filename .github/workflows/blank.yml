@@ -42,11 +42,9 @@ jobs:
           accountId="${{ env.ACCOUNT_ID }}"
           echo $envType
           echo "$ACCOUNT_ID" > accounts.yml
-          ls
-          echo "******* ********"
           echo "******* YAML ********"
           cat accounts.yml
-          accountId=$(yq eval '.$envType' accounts.yml)
+          accountId=$(yq eval .$envType accounts.yml)
           echo $accountId
           echo "::set-output name=accountId::$accountId"
           
