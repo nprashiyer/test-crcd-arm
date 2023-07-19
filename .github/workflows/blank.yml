@@ -41,11 +41,11 @@ jobs:
           envType="${{ inputs.envType }}"
           accountId="${{ env.ACCOUNT_ID }}"
           echo $envType
-          echo "$ACCOUNT_ID"
+          echo "$ACCOUNT_ID" > accounts.yml
           echo "******* ********"
           yq --help
-          echo "******* ********"
-          echo "$ACCOUNT_ID" | yq eval '.sbx'
+          echo "******* YAML ********"
+          yq '.sbx' accounts.yml
           echo "::set-output name=accountId::$accountId"
           
 
