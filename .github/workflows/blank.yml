@@ -37,8 +37,8 @@ jobs:
       - name: Select Account Number
         id: account-id
         run: |
-          mapping="${{ env.ACCOUNT_ID }}"
-          envType="${{ inputs.envType }}"
+          mapping=${{ env.ACCOUNT_ID }}
+          envType=${{ inputs.envType }}
           accountId=$(echo "$mapping" | jq -r ".$envType")
           echo "::set-output name=accountId::$accountId"
 
