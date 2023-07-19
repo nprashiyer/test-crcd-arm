@@ -17,8 +17,9 @@ on:
          - qa
 
 env:
-  sbx: 123456678
-  qa: 19921504
+  ACCOUNT_ID: >
+    sbx: 123456678
+    qa: 19921504
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
   # This workflow contains a single job called "build"
@@ -35,8 +36,6 @@ jobs:
         id: account-id
         run: |
           envType="${{ inputs.envType }}"
-          echo "----->$envType<--------"
-          accountId=${{ fromJson('{ sbx: "i386", dev: "x86_64" }')[envType] }}
           echo "******** $accountId ********"
           echo "::set-output name=accountId::$accountId"
           
