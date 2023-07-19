@@ -42,7 +42,7 @@ jobs:
           accountId="${{ env.ACCOUNT_ID }}"
           echo $accountId
           echo "******* ********"
-          cat "${{ env.ACCOUNT_ID }}" | yq r - sbx
+          echo "${{ env.ACCOUNT_ID }}" | yq r - sbx
           echo "::set-output name=accountId::$accountId"
           
 
