@@ -43,7 +43,8 @@ jobs:
           echo $envType
           echo "$ACCOUNT_ID"
           echo "******* ********"
-          echo "$ACCOUNT_ID" | yq '.sbx'
+          yq --help
+          echo "$ACCOUNT_ID" | yq e '.sbx'
           echo "::set-output name=accountId::$accountId"
           
 
