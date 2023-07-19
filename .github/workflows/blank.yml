@@ -45,7 +45,7 @@ jobs:
           echo "******* ********"
           yq --help
           echo "******* ********"
-          echo "$ACCOUNT_ID" | yq e '.sbx'
+          echo "$ACCOUNT_ID" | yq eval '.sbx'
           echo "::set-output name=accountId::$accountId"
           
 
