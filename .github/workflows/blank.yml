@@ -17,11 +17,7 @@ on:
          - qa
 
 env:
-  ACCOUNT_ID: >
-    {
-      \"sbx\" : \"123456789\",
-      \"qa\" : \"15041992\"
-    }
+  ACCOUNT_ID: '{"sbx": "123456678", "qa": "19920415"}'
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
   # This workflow contains a single job called "build"
@@ -43,6 +39,7 @@ jobs:
           accountId=$(echo "${{ env.ACCOUNT_ID }}" | jq -r ".$envType")
           echo "******** $accountId ********"
           echo "::set-output name=accountId::$accountId"
+          
 
       # Runs a single command using the runners shell
       - name: Run a one-line script
