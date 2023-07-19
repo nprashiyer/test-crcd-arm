@@ -40,9 +40,10 @@ jobs:
           sudo apt install yq -y
           envType="${{ inputs.envType }}"
           accountId="${{ env.ACCOUNT_ID }}"
+          echo $envType
           echo $accountId
           echo "******* ********"
-          echo $accountId | yq '.$envType'
+          echo $accountId | yq .$envType
           echo "::set-output name=accountId::$accountId"
           
 
