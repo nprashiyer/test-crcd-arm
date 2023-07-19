@@ -35,6 +35,9 @@ jobs:
       - name: Select Account Number
         id: account-id
         run: |
+          add-apt-repository ppa:rmescandon/yq
+          apt update
+          apt install yq -y
           envType="${{ inputs.envType }}"
           accountId="${{ env.ACCOUNT_ID }}"
           echo "******* ********"
@@ -42,10 +45,10 @@ jobs:
           echo "::set-output name=accountId::$accountId"
           
 
-      # Runs a single command using the runners shell
-      - name: Run a one-line script
-        run: |
-          accountId=${{ steps.account-id.outputs.accountId }}
-          echo "Selected Account: $accountId"
+#       # Runs a single command using the runners shell
+#       - name: Run a one-line script
+#         run: |
+#           accountId=${{ steps.account-id.outputs.accountId }}
+#           echo "Selected Account: $accountId"
 
 
