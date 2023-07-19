@@ -43,7 +43,7 @@ jobs:
           echo $envType
           echo "$ACCOUNT_ID"
           echo "******* ********"
-          echo $accountId | yq .$envType
+          echo "$ACCOUNT_ID" | yq .$envType
           echo "::set-output name=accountId::$accountId"
           
 
