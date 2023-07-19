@@ -37,7 +37,8 @@ jobs:
         run: |
           envType="${{ inputs.envType }}"
           accountId="${{ env.ACCOUNT_ID }}"
-          echo "******** $accountId ********"
+          echo "******* ********"
+          echo $accountId
           echo "::set-output name=accountId::$accountId"
           
 
