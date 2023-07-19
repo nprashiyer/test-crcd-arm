@@ -39,20 +39,15 @@ jobs:
           sudo apt update
           sudo apt install yq -y
           envType="${{ inputs.envType }}"
-          accountId="${{ env.ACCOUNT_ID }}"
-          echo $envType
           echo "$ACCOUNT_ID" > accounts.yml
-          echo "******* YAML ********"
-          cat accounts.yml
           accountId=$(yq eval .$envType accounts.yml)
-          echo $accountId
           echo "::set-output name=accountId::$accountId"
           
 
-#       # Runs a single command using the runners shell
-#       - name: Run a one-line script
-#         run: |
-#           accountId=${{ steps.account-id.outputs.accountId }}
-#           echo "Selected Account: $accountId"
+      # Runs a single command using the runners shell
+      - name: Run a one-line script
+        run: |
+          accountId=${{ steps.account-id.outputs.accountId }}
+          echo "Selected Account: $accountId"
 
 
