@@ -9,7 +9,7 @@ on:
   workflow_dispatch:
     inputs:
       envType:
-        description: "Account Name"
+        description: 'Account "Name"'
         type: choice
         default: sbx
         options:
